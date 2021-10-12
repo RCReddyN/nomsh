@@ -102,65 +102,66 @@ int executeCommand(char **args){
 }
 
 char *read_line(){
-    int buffer_size = BUFFER_SIZE;
-    int position = 0;
-    char *buffer = malloc(sizeof(char) * buffer_size);
-    int c = 0;
-    if(!buffer){
-        fprintf(stderr, "nomsh: allocation error.\n");
-        exit(EXIT_FAILURE);
-    }
+	int buffer_size = LINE_BUFFER_SIZE;
+	int position = 0 ;
+	char *buffer = malloc(sizeof(char) * buffer_size);
+	int c =0;
 
-    while(1){
-        c = getchar();
-        if(c == EOF || c == '\0'){
-            buffer[position] = '\0';
-            return buffer;
-        }
+	if(!buffer){
+		fprintf(stderr, "nomsh: allocation error\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	while(1){
+		c = getchar();
+		if(c == EOF || c == '\n'){
+			buffer[position] = '\0';
+			return buffer;
+		}
+		buffer[position] = c;
+		position++;
 
-        buffer[position] = c;
-        position++;
-
-        if(position >= buffer_size){
-            buffer_size += BUFFER_SIZE;
-            buffer = realloc(buffer, buffer_size);
-            if(!buffer){
-                fprintf(stderr, "nomsh: allocation error.\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-    }
+		if(position >= buffer_size){
+			buffer_size += LINE_BUFFER_SIZE;
+			buffer = realloc(buffer, buffer_size);
+			if(!buffer){
+				fprintf(stderr, "nomsh: allocation error\n");
+				exit(EXIT_FAILURE);
+			}
+		}
+	}
 }
 
+
 char **split_line(char *line){
-    int token_size = TOKEN_SIZE;
-    int position = 0;
-    char **tokens = malloc(sizeof(char*) * token_size);
-    char *token;
+	int buffer_size = TOKEN_BUFFER_SIZE;
+	int position = 0;
+	char **tokens = malloc(sizeof(char*) * buffer_size);
+	char *token;
 
-    if(!token){
-        fprintf(stderr, "nomsh: allocation error.\n");
-        exit(EXIT_FAILURE);
-    }
+	if(!tokens){
+		fprintf(stderr, "nomsh: allocation error\n");
+		exit(EXIT_FAILURE);
+	}
 
-    token = strtok(line, TOKEN_DELIMITER);
-    while(token != NULL){
-        tokens[position] = token;
-        position++;
+	token = strtok(line, TOKEN_DELIMITER);
+	while(token != NULL){
+		tokens[position] = token;
+		position++;
 
-        if(position >= token_size){
-            token_size += TOKEN_SIZE;
-            tokens = realloc(tokens, sizeof(char*)*token_size);
-            if(!tokens){
-                fprintf(stderr, "nomsh: allocation error.\n");
-                exit(EXIT_FAILURE);
-            }
-        }
+		if(position >= buffer_size){
+			buffer_size += TOKEN_BUFFER_SIZE;
+			tokens = realloc(tokens, buffer_size * sizeof(char*));
+			if(!tokens){
+				fprintf(stderr, "nomsh: allocation error\n");
+				exit(EXIT_FAILURE);
+			}
+		}
 
-        token = strtok(NULL, TOKEN_DELIMITER);
-    }
-    tokens[position] = NULL;
-    return tokens;
+		token = strtok(NULL, TOKEN_DELIMITER);
+	}
+	tokens[position] = NULL;
+	return tokens;
 }
 
 void printPrompt(){
