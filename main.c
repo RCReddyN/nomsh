@@ -102,7 +102,7 @@ int executeCommand(char **args){
 }
 
 char *read_line(){
-	int buffer_size = LINE_BUFFER_SIZE;
+	int buffer_size = BUFFER_SIZE;
 	int position = 0 ;
 	char *buffer = malloc(sizeof(char) * buffer_size);
 	int c =0;
@@ -122,7 +122,7 @@ char *read_line(){
 		position++;
 
 		if(position >= buffer_size){
-			buffer_size += LINE_BUFFER_SIZE;
+			buffer_size += BUFFER_SIZE;
 			buffer = realloc(buffer, buffer_size);
 			if(!buffer){
 				fprintf(stderr, "nomsh: allocation error\n");
