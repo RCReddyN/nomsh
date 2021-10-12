@@ -11,7 +11,7 @@
 
 int changeDirectoryCommand(char **args){
     if(args[1] == NULL){
-        fprintf(stderr, "nomsh: expected argument to cd.\n");
+        fprintf(stderr, "%s: expected argument.\n", args[0]);
     }
     else{
         if(chdir(args[1]) != 0){
