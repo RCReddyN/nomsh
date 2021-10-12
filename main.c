@@ -134,7 +134,7 @@ char *read_line(){
 
 
 char **split_line(char *line){
-	int buffer_size = TOKEN_BUFFER_SIZE;
+	int buffer_size = TOKEN_SIZE;
 	int position = 0;
 	char **tokens = malloc(sizeof(char*) * buffer_size);
 	char *token;
@@ -150,7 +150,7 @@ char **split_line(char *line){
 		position++;
 
 		if(position >= buffer_size){
-			buffer_size += TOKEN_BUFFER_SIZE;
+			buffer_size += TOKEN_SIZE;
 			tokens = realloc(tokens, buffer_size * sizeof(char*));
 			if(!tokens){
 				fprintf(stderr, "nomsh: allocation error\n");
