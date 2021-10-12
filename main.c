@@ -1,8 +1,9 @@
-#include <stdio.h> 
-#include <string.h> 
-#include <stdlib.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<limits.h>
+#include<string.h>
+#include<sys/wait.h>
 
 #define BUFFER_SIZE 1024
 #define TOKEN_SIZE 64
@@ -88,17 +89,11 @@ int executeCommand(char **args){
         return helpCommand(args);
     }
 
-    else if(strcmp("mkdir", args[0]) == 0){
-        return makeDirectoryCommand(args);
-    }
 
     else if(strcmp("cwd", args[0]) == 0){
         return currentWorkingDirectoryCommand(args);
     }
 
-    else if(strcmp("rmdir", args[0]) == 0){
-        return removeDirectoryCommand(args);
-    }
 
     else if(strcmp("exit", args[0]) == 0){
         return exitShell(args);
