@@ -8,7 +8,7 @@
 #define TOKEN_SIZE 64
 #define TOKEN_DELIMITER " \t\r\n\a"
 
-int changeDirectoryCommand(args){
+int changeDirectoryCommand(char **args){
     if(args[1] == NULL){
         fprintf(stderr, "nomsh: expected argument to cd.\n");
     }
@@ -28,14 +28,14 @@ int echoCommand(char **args){
     printf("%s\n", args[arglen-2]);
 }
 
-int helpCommand(args){
+int helpCommand(){
     printf("NOMSH\n");
 	printf("Type command followed by arguments and hit enter.\n");
 	printf("cd, echo, mkdir, cwd, rmdir, help, and exit are currently supported.\n");
 	return 1;
 }
 
-int currentWorkingDirectoryCommand(char **args){
+int currentWorkingDirectoryCommand(){
     char *cwd;
     char buff[PATH_MAX + 1];
 
@@ -48,7 +48,7 @@ int currentWorkingDirectoryCommand(char **args){
 
 
 int exitShell(args){
-
+    return 0;
 }
 
 int launchProcess(char **args){
