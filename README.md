@@ -3,6 +3,8 @@ A shell written in C
 
 Currently supports the following commands:
 * cd
+* cwd
+* echo
 * help
 * exit
 

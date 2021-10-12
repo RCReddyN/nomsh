@@ -1,43 +1,109 @@
-#include<stdio.h> 
-#include<string.h> 
+#include<stdio.h>
 #include<stdlib.h>
-#include<sys/wait.h>
 #include<unistd.h>
 #include<limits.h>
-#define LINE_BUFFER_SIZE 1024
-#define TOKEN_BUFFER_SIZE 64
+#include<string.h>
+#include<sys/wait.h>
+
+#define BUFFER_SIZE 1024
+#define TOKEN_SIZE 64
 #define TOKEN_DELIMITER " \t\r\n\a"
 
-int sh_cd(char **args);
-int sh_help(char **args);
-int sh_exit(char **args);
-
-int sh_cd(char **args){
-	if(args[1] == NULL){
-		fprintf(stderr, "nomsh: expected argument to \"cd\"\n");
-	}
-	else{
-		if(chdir(args[1]) != 0){
-			perror("nomsh");
-		}
-	}
-	return 1;
+int changeDirectoryCommand(char **args){
+    if(args[1] == NULL){
+        fprintf(stderr, "nomsh: expected argument to cd.\n");
+    }
+    else{
+        if(chdir(args[1]) != 0){
+            perror("nomsh");
+        }
+    }
+    return 1;
 }
 
-int sh_help(char **args){
-	printf("NOMSH\n");
+int echoCommand(char **args){
+    int arglen = sizeof(args)/sizeof(char*);
+    for(int i=1; i<arglen-2; i++){
+        printf("%s ", args[i]);
+    }
+    printf("%s\n", args[arglen-2]);
+}
+
+int helpCommand(){
+    printf("NOMSH\n");
 	printf("Type command followed by arguments and hit enter.\n");
-	printf("cd, help, and exit are currently supported.\n");
+	printf("cd, echo, cwd, help, and exit are currently supported.\n");
 	return 1;
 }
 
-int sh_exit(char ** args){
-	return 0;
+int currentWorkingDirectoryCommand(){
+    char *cwd;
+    char buff[PATH_MAX + 1];
+
+    cwd = getcwd(buff, PATH_MAX + 1);
+    if(cwd != NULL){
+        printf("Currently working in %s.\n", cwd);
+    }
+    return 1;
 }
 
+
+int exitShell(){
+    return 0;
+}
+
+int launchProcess(char **args){
+    int pid = fork();
+    int status, wpid;
+
+    if(pid == 0){
+        if(execvp(args[0], args) == -1){
+            perror("nomsh");
+		}
+		exit(EXIT_FAILURE);
+	}
+	else if(pid < 0){
+		perror("nomsh");
+    }
+    else{
+        do{
+            wpid = waitpid(pid, &status, WUNTRACED);
+        }    
+        while(!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+    return 1;
+}
+
+int executeCommand(char **args){
+    if(args[0] == NULL){
+        return 1;
+    }
+    else if(strcmp("cd", args[0]) == 0){
+        return changeDirectoryCommand(args);
+    }
+    
+    else if(strcmp("echo", args[0]) == 0){
+        return echoCommand(args);
+    }
+
+    else if(strcmp("help", args[0]) == 0){
+        return helpCommand(args);
+    }
+
+
+    else if(strcmp("cwd", args[0]) == 0){
+        return currentWorkingDirectoryCommand(args);
+    }
+
+
+    else if(strcmp("exit", args[0]) == 0){
+        return exitShell(args);
+    }
+    return launchProcess(args);
+}
 
 char *read_line(){
-	int buffer_size = LINE_BUFFER_SIZE;
+	int buffer_size = BUFFER_SIZE;
 	int position = 0 ;
 	char *buffer = malloc(sizeof(char) * buffer_size);
 	int c =0;
@@ -57,7 +123,7 @@ char *read_line(){
 		position++;
 
 		if(position >= buffer_size){
-			buffer_size += LINE_BUFFER_SIZE;
+			buffer_size += BUFFER_SIZE;
 			buffer = realloc(buffer, buffer_size);
 			if(!buffer){
 				fprintf(stderr, "nomsh: allocation error\n");
@@ -69,7 +135,7 @@ char *read_line(){
 
 
 char **split_line(char *line){
-	int buffer_size = TOKEN_BUFFER_SIZE;
+	int buffer_size = TOKEN_SIZE;
 	int position = 0;
 	char **tokens = malloc(sizeof(char*) * buffer_size);
 	char *token;
@@ -85,7 +151,7 @@ char **split_line(char *line){
 		position++;
 
 		if(position >= buffer_size){
-			buffer_size += TOKEN_BUFFER_SIZE;
+			buffer_size += TOKEN_SIZE;
 			tokens = realloc(tokens, buffer_size * sizeof(char*));
 			if(!tokens){
 				fprintf(stderr, "nomsh: allocation error\n");
@@ -99,66 +165,27 @@ char **split_line(char *line){
 	return tokens;
 }
 
-int sh_launch(char **args){
-	pid_t pid, wid;
-	int status;
-
-	pid = fork();
-	if(pid == 0){
-		if(execvp(args[0], args) == -1){
-			perror("nomsh");
-		}
-		exit(EXIT_FAILURE);
-	}
-	else if(pid < 0){
-		perror("nomsh");
-	}
-	else{
-		do{
-			wid = waitpid(pid, &status, WUNTRACED);
-		}
-		while(!WIFEXITED(status) && !WIFSIGNALED(status));
-	}
-	
-	return 1;
+void printPrompt(){
+    printf("> ");
 }
-
-int sh_execute(char **args){
-	if(args[0] == NULL){
-		return 1;
-	}
-	if(strcmp("cd", args[0]) == 0){
-		return sh_cd(args);
-	}
-	else if(strcmp("help", args[0]) == 0){
-		return sh_help(args);
-	}
-	else if(strcmp("exit", args[0]) == 0){
-		return sh_exit(args);
-	}
-
-	return sh_launch(args);
-}
-
-
 
 void loop(){
-	char *line;
-	char **args;
-	int status = 1;
+    char *line;
+    char **args;
+    int status = 1;
+    
+    while(status){
+        printPrompt();
+        line = read_line();
+        args = split_line(line);
+        status = executeCommand(args);
 
-	while(status){
-		printf("> ");
-		line = read_line();
-		args = split_line(line);
-		status = sh_execute(args);
-	
-		free(line);
-	        free(args);
-	}
+        free(line);
+        free(args);
+    }
 }
 
-int main(){
-	loop();
-	return 0;
+int main(int argc, char*argv[]){
+    loop();
+    return EXIT_SUCCESS;
 }
