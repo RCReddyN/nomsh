@@ -47,7 +47,7 @@ int currentWorkingDirectoryCommand(){
 }
 
 
-int exitShell(args){
+int exitShell(){
     return 0;
 }
 
