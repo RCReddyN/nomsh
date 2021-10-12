@@ -11,6 +11,7 @@ Currently supports the following commands:
 Compile the file named "shell.c":
 
 `
+cd src
 gcc shell.c -o shell
 `
 
