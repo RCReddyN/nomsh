@@ -1,5 +1,5 @@
 # nomsh
-A shell written in C, implementing the lab <href="https://www.cse.iitb.ac.in/~mythili/os/labs/lab-shell/shell.pdf">"Building a Shell"</href>.
+A shell written in C, implementing the lab <a href="https://www.cse.iitb.ac.in/~mythili/os/labs/lab-shell/shell.pdf">"Building a Shell"</a>.
 
 Currently supports the following commands:
 * cd
