@@ -1,18 +1,12 @@
 # nomsh
-A shell written in C, implementing the lab <a href="https://www.cse.iitb.ac.in/~mythili/os/labs/lab-shell/shell.pdf">Building a Shell</a>.
+A shell written in C.
 
-Currently supports the following commands:
-* cd
-* cwd
-* echo
-* help
-* exit
 
-Compile the file named "shell.c":
-
+Make preparations:
 `
-cd src
-gcc shell.c -o shell
+git clone https://github.com/RCReddyN/nomsh.git
+cd nomsh
+make
 `
 
 Start the shell:
@@ -20,5 +14,7 @@ Start the shell:
 `
 ./shell
 `
-
-Functionalities for other commands will be added. Come back in some time.
+Remove binary files:
+`
+make clean
+`
