@@ -24,6 +24,12 @@ void changeDirectoryCommand(char **args){
     	}
 }
 
+void exitShell(){
+	//change when background execution is supported.
+	while(wait(NULL) > 0);
+	exit(0);
+}
+
 void buildBuiltinCommandTrie(){
 	builtins = createTrieNode();
 	insert(builtins, "cd");
@@ -41,6 +47,9 @@ void executeBuiltinCommand(char** args){
 	if(strcmp("cd", args[0]) == 0){
 		changeDirectoryCommand(args);
 	}
+	else if(strcmp("exit", args[0]) == 0){
+		exitShell();
+	}		
 }
 
 void runexec(char **args, int output_redirection){
