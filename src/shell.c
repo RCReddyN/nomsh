@@ -3,6 +3,7 @@
 #include<unistd.h>
 #include<limits.h>
 #include<string.h>
+#include<fcntl.h>
 #include<sys/wait.h>
 #include "trie.h"
 
@@ -14,7 +15,7 @@ struct Trie* builtins;
 
 void changeDirectoryCommand(char **args){
     	if(args[1] == NULL){
-        	fprintf(stderr, "%s: expected argument.\n", args[0]);
+        	fprintf(stderr, "nomsh: expected argument for %s\n", args[0]);
     	}	
     	else{
         	if(chdir(args[1]) != 0){
@@ -42,9 +43,20 @@ void executeBuiltinCommand(char** args){
 	}
 }
 
-void runexec(char **args){
+void runexec(char **args, int output_redirection){
 	int pid = fork();
 	if(pid == 0){
+		if(output_redirection > 0){
+			char *outputfile = (char*) malloc(sizeof(char)*64);
+			strcpy(outputfile, args[output_redirection+1]);
+			int fd = open(outputfile, O_CREAT |  O_TRUNC | O_RDWR, S_IRWXU | S_IRWXG);
+			if(fd < 0){
+				fprintf(stderr, "nomsh: Error opening file\n");
+			}
+			dup2(fd, 1);
+			close(fd);
+			args[output_redirection] = NULL;
+		}
 		if(execvp(args[0], args) == -1){
 			perror("nomsh");
 		}
@@ -57,16 +69,43 @@ void runexec(char **args){
     	}
 }
 
+int isOutputRedirected(char **args){
+	int index = -1;
+	for(int i=0; args[i] != NULL; i++){
+		if(strcmp(">", args[i]) == 0){
+			index = i;
+			break;
+		}
+	}
+	return index;
+}
+
+int countArguments(char **args){
+	int c = 0;
+	for(int i=0; args[i] != NULL; i++){
+		c++;
+	}
+	return c;
+}
+
 void executeCommand(char **args){
-	char *cmd =args[0];
-	if(cmd == NULL){
+	if(args[0] == NULL){
 		return;
 	}
-    	else if(isBuiltinCommand(cmd)){
+	
+	int argNum = countArguments(args);
+	int output_redirection = isOutputRedirected(args);
+
+	if(output_redirection != -1 && argNum - output_redirection != 2){
+		fprintf(stderr, "nomsh: Multiple files found after >\n");
+		return;
+	}
+
+    	else if(isBuiltinCommand(args[0])){
 		executeBuiltinCommand(args);
 	}
 	else{
-		runexec(args);
+		runexec(args, output_redirection);
 	}
 }
 

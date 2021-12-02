@@ -5,4 +5,4 @@ shell.o: src/shell.c
 trie.o: src/trie.c
 	gcc src/trie.c -c
 clean:
-	rm *.o shell
+	rm -f *.o shell
